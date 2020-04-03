@@ -2,6 +2,7 @@ package com.xt.samplesocket;
 
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -9,6 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.blankj.utilcode.util.ConvertUtils;
+import com.blankj.utilcode.util.NetworkUtils;
 import com.blankj.utilcode.util.SPUtils;
 import com.blankj.utilcode.util.ToastUtils;
 
@@ -23,6 +25,16 @@ public class ServerActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_server);
+        final Button button3 = findViewById(R.id.button3);
+        //刷新本机ip
+        button3.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String ipAddress = NetworkUtils.getIPAddress(true);
+                button3.setText(ipAddress);
+            }
+        });
+
         final EditText editText1 = findViewById(R.id.editText1);
         editText1.setText(String.valueOf(SPUtils.getInstance().getInt("port", 5363)));
         findViewById(R.id.button1).setOnClickListener(new View.OnClickListener() {

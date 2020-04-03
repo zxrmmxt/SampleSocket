@@ -32,14 +32,7 @@ public class ClientActivity extends AppCompatActivity {
         TextView       button3   = findViewById(R.id.button3);
         final TextView textView2 = findViewById(R.id.textView2);
 
-        //刷新本机ip
-        button1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String ipAddress = NetworkUtils.getIPAddress(true);
-                button1.setText(ipAddress);
-            }
-        });
+
         editText1.setText(SPUtils.getInstance().getString("ipAddress", "192.168.168.145:5363"));
         //连接
         button2.setOnClickListener(new View.OnClickListener() {
