@@ -8,7 +8,7 @@ import java.io.OutputStream;
 import java.net.Socket;
 
 /**
- * created by XuTi on 2019/4/29 15:14
+ * @author xt on 2019/4/29 15:14
  */
 public final class SocketManager {
     private static final String       TAG = "SocketManager";
