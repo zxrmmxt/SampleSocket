@@ -129,22 +129,31 @@ public class ServerSocketManager {
                 mOutputStream.close();
                 mOutputStream = null;
             }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
             if (mInputStream != null) {
                 mInputStream.close();
                 mInputStream = null;
             }
-
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
             if (mSocket != null) {
                 if (!mSocket.isClosed()) {
                     mSocket.close();
                 }
                 mSocket = null;
             }
-
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
             if (mServerSocket != null) {
-                if (mServerSocket.isClosed()) {
-                    mServerSocket.close();
-                }
+                mServerSocket.close();
                 mSocket = null;
             }
         } catch (IOException e) {

@@ -25,7 +25,6 @@ public class ClientActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_client);
-        final Button   button1   = findViewById(R.id.button1);
         final EditText editText1 = findViewById(R.id.editText1);
         Button         button2   = findViewById(R.id.button2);
         final EditText editText2 = findViewById(R.id.editText2);
@@ -44,12 +43,7 @@ public class ClientActivity extends AppCompatActivity {
                     String[]     split     = address.split(":");
                     final String ipAddress = split[0];
                     final int    port      = Integer.parseInt(split[1]);
-                    MyThreadUtils.doBackgroundWork(new Runnable() {
-                        @Override
-                        public void run() {
-                            SocketManager.getInstance().connect(ipAddress, port);
-                        }
-                    });
+                    SocketManager.getInstance().connect(ipAddress, port);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -63,16 +57,7 @@ public class ClientActivity extends AppCompatActivity {
                 if (TextUtils.isEmpty(text)) {
                     return;
                 }
-                MyThreadUtils.doBackgroundWork(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            SocketManager.getInstance().send(ConvertUtils.hexString2Bytes(text));
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                });
+                SocketManager.getInstance().send(ConvertUtils.hexString2Bytes(text));
             }
         });
 
