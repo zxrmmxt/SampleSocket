@@ -117,7 +117,7 @@ public class ServerSocketManager {
      * 判断是否连接
      */
     public boolean isConnected() {
-        return mSocket != null && mSocket.isConnected() && (!mSocket.isClosed());
+        return (mSocket != null) && mSocket.isConnected() && (!mSocket.isClosed()) && (mServerSocket != null) && (!mServerSocket.isClosed());
     }
 
     /**
@@ -145,6 +145,7 @@ public class ServerSocketManager {
                 if (mServerSocket.isClosed()) {
                     mServerSocket.close();
                 }
+                mSocket = null;
             }
         } catch (IOException e) {
             e.printStackTrace();
