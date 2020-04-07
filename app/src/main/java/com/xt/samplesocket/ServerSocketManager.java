@@ -12,12 +12,13 @@ import java.net.Socket;
  * @author xt on 2020/4/3 14:31
  */
 public class ServerSocketManager {
-    private        ServerSocket        mServerSocket;
-    private        Socket              mSocket;
-    private        InputStream         mInputStream;
-    private        OutputStream        mOutputStream;
-    private static ServerSocketManager sServerSocketManager;
-    private        ClientCallback      mClientCallback;
+    private          ServerSocket        mServerSocket;
+    private          Socket              mSocket;
+    private          InputStream         mInputStream;
+    private          OutputStream        mOutputStream;
+    private static   ServerSocketManager sServerSocketManager;
+    private          ClientCallback      mClientCallback;
+    private volatile boolean             mIsConnected = false;
 
     /**
      * @steps bind();绑定端口号
@@ -42,9 +43,20 @@ public class ServerSocketManager {
         MyThreadUtils.doBackgroundWork(new Runnable() {
             @Override
             public void run() {
-                try {
-                    close();
+                for (int i = 0; i < 3; i++) {
+                    if (isConnected()) {
+                        close();
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        break;
+                    }
+                }
 
+                try {
                     mServerSocket = new ServerSocket(port);
 
                     /**
@@ -56,6 +68,7 @@ public class ServerSocketManager {
                     mInputStream = mSocket.getInputStream();
                     mOutputStream = mSocket.getOutputStream();
                     {
+                        setConnected(true);
                         if (mClientCallback != null) {
                             mClientCallback.onClientConnected();
                         }
@@ -80,6 +93,9 @@ public class ServerSocketManager {
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
+                    {
+                        setConnected(false);
+                    }
                     close();
                     if (mClientCallback != null) {
                         mClientCallback.onClientDisconneted();
@@ -87,6 +103,17 @@ public class ServerSocketManager {
                 }
             }
         });
+    }
+
+    private void setConnected(boolean isConnected) {
+        mIsConnected = isConnected;
+    }
+
+    /**
+     * 判断是否连接
+     */
+    public boolean isConnected() {
+        return mIsConnected;
     }
 
     /**
@@ -104,6 +131,9 @@ public class ServerSocketManager {
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
+                    {
+                        setConnected(false);
+                    }
                     close();
                     if (mClientCallback != null) {
                         mClientCallback.onClientDisconneted();
@@ -113,10 +143,7 @@ public class ServerSocketManager {
         });
     }
 
-    /**
-     * 判断是否连接
-     */
-    public boolean isConnected() {
+    private boolean isConnect() {
         return (mSocket != null) && mSocket.isConnected() && (!mSocket.isClosed()) && (mServerSocket != null) && (!mServerSocket.isClosed());
     }
 
@@ -125,9 +152,24 @@ public class ServerSocketManager {
      */
     public void close() {
         try {
+            if (mServerSocket != null) {
+                mServerSocket.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            if (mSocket != null) {
+                mSocket.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
             if (mOutputStream != null) {
                 mOutputStream.close();
-                mOutputStream = null;
             }
 
         } catch (IOException e) {
@@ -136,25 +178,6 @@ public class ServerSocketManager {
         try {
             if (mInputStream != null) {
                 mInputStream.close();
-                mInputStream = null;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
-            if (mSocket != null) {
-                if (!mSocket.isClosed()) {
-                    mSocket.close();
-                }
-                mSocket = null;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
-            if (mServerSocket != null) {
-                mServerSocket.close();
-                mSocket = null;
             }
         } catch (IOException e) {
             e.printStackTrace();

@@ -25,6 +25,8 @@ public final class SocketManager {
      */
     private volatile     InputStream  mInputStream;
 
+    private volatile boolean mIsConnected = false;
+
     /**
      * 连接回调
      */
@@ -52,14 +54,25 @@ public final class SocketManager {
         MyThreadUtils.doBackgroundWork(new Runnable() {
             @Override
             public void run() {
-                close();
+                for (int i = 0; i < 3; i++) {
+                    if (isConnected()) {
+                        close();
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        break;
+                    }
+                }
                 try {
                     mSocket = new Socket(ipAddress, port);
                     Log.e(TAG, "连接成功");
 
                     mOutputStream = mSocket.getOutputStream();
                     mInputStream = mSocket.getInputStream();
-
+                    setConnected(true);
                     if (mServerCallback != null) {
                         mServerCallback.onServerConnected();
                     }
@@ -67,6 +80,7 @@ public final class SocketManager {
                     receive();
                 } catch (IOException e) {
                     Log.e(TAG, "连接异常：" + e.toString());
+                    setConnected(false);
                     close();
                     if (mServerCallback != null) {
                         mServerCallback.onServerDisconnected(e);
@@ -76,10 +90,21 @@ public final class SocketManager {
         });
     }
 
+    private void setConnected(boolean isConnected) {
+        mIsConnected = isConnected;
+    }
+
     /**
      * 判断是否连接
      */
     public boolean isConnected() {
+        return mIsConnected;
+    }
+
+    /**
+     * 判断是否连接
+     */
+    public boolean isConnect() {
         return mSocket != null && mSocket.isConnected() && (!mSocket.isClosed());
     }
 
@@ -88,9 +113,17 @@ public final class SocketManager {
      */
     public void close() {
         try {
+            if (mSocket != null) {
+                if (!mSocket.isClosed()) {
+                    mSocket.close();
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
             if (mOutputStream != null) {
                 mOutputStream.close();
-                mOutputStream = null;
             }
 
         } catch (IOException e) {
@@ -99,17 +132,6 @@ public final class SocketManager {
         try {
             if (mInputStream != null) {
                 mInputStream.close();
-                mInputStream = null;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
-            if (mSocket != null) {
-                if (!mSocket.isClosed()) {
-                    mSocket.close();
-                }
-                mSocket = null;
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -153,6 +175,7 @@ public final class SocketManager {
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
+                    setConnected(false);
                     close();
                     if (mServerCallback != null) {
                         mServerCallback.onServerDisconnected(e);

@@ -21,28 +21,33 @@ import java.util.concurrent.TimeUnit;
 public class MyThreadUtils {
     private static ThreadPoolExecutor sThreadPoolExecutor;
 
-    public static ThreadPoolExecutor getThreadPoolExecutor(final String name) {
+    public static ThreadPoolExecutor getThreadPoolExecutor() {
+
         if (sThreadPoolExecutor == null) {
             ThreadFactory threadFactory = new ThreadFactory() {
                 @Override
                 public Thread newThread(@NonNull Runnable r) {
-                    return new Thread(r, name);
+                    return new Thread(r, "");
                 }
             };
             sThreadPoolExecutor = new ThreadPoolExecutor(0, Integer.MAX_VALUE,
                                                          60L, TimeUnit.SECONDS,
-                                                         new SynchronousQueue<Runnable>(), threadFactory);
-            sThreadPoolExecutor.setThreadFactory(threadFactory);
+                                                         new SynchronousQueue<Runnable>(),
+                                                         threadFactory);
         }
         return sThreadPoolExecutor;
     }
 
-    public static ThreadPoolExecutor getThreadPoolExecutor() {
-        return getThreadPoolExecutor("");
-    }
-
     public static void doBackgroundWork(Runnable runnable, final String name) {
-        getThreadPoolExecutor(name).execute(runnable);
+        ThreadFactory threadFactory = new ThreadFactory() {
+            @Override
+            public Thread newThread(@NonNull Runnable r) {
+                return new Thread(r, name);
+            }
+        };
+        ThreadPoolExecutor threadPoolExecutor = getThreadPoolExecutor();
+        threadPoolExecutor.setThreadFactory(threadFactory);
+        threadPoolExecutor.execute(runnable);
     }
 
 
@@ -155,8 +160,8 @@ public class MyThreadUtils {
             }
         }
 
-        public int getHavingDoneTaskTimes(){
-            return mTimes-mLimitTimesTimerTask.getTimes();
+        public int getHavingDoneTaskTimes() {
+            return mTimes - mLimitTimesTimerTask.getTimes();
         }
 
         public void setTimes(int times) {
